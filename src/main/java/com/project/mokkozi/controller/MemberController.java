@@ -2,7 +2,10 @@ package com.project.mokkozi.controller;
 
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.model.ApiResponse;
+import com.project.mokkozi.model.JoinRequest;
 import com.project.mokkozi.service.MemberService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/member")
+@RequestMapping("/members")
 /*
     Create : POST (Body O)
         - /member : 새로운 member 데이터 생성
@@ -95,4 +98,18 @@ public class MemberController {
         return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
     }
 
+    @GetMapping("/duplication/{loginId}")
+    public ResponseEntity<?> checkLoginIdDuplicate(@PathVariable String loginId) throws BadRequestException{
+        if(memberService.checkLoginIdDuplicate(loginId)) {
+            throw new BadRequestException("중복된 아이디 입니다.");
+        }
+        else {
+            return ResponseEntity.ok("사용 가능한 아이디 입니다.");
+        }
+    }
+
+    /*@PostMapping("/members")
+    public ApiResponse join(@RequestBody JoinRequest request) {
+        return memberService.join(request);
+    }*/
 }
