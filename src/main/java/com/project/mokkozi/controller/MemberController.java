@@ -1,5 +1,6 @@
 package com.project.mokkozi.controller;
 
+
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
 import com.project.mokkozi.service.MemberService;
@@ -31,6 +32,7 @@ public class MemberController {
 
     @Autowired
     private MemberService memberService;
+
 
     @Autowired
     private JWTProvider jwtProvider;
