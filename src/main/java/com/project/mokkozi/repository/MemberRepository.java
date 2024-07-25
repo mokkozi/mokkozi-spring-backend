@@ -15,5 +15,36 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByName(String memberName);
     Optional<Member> findByLoginId(String loginId);
+    boolean existsByLoginId(String loginId);
 
+    /*
+    private final EntityManager em;
+
+    public void createMember(Member member) {
+        em.persist(member);
+    }
+
+    public void remove(Long id) {
+        em.remove(findById(id));
+    }
+
+    public List<Member> findAllMember() {
+        return em.createQuery("SELECT m FROM Member m", Member.class)
+                .getResultList();
+    }
+
+    public Member findById(Long id) {
+        return em.find(Member.class, id);
+    }
+
+    public Member findByName(String findName) {
+        return em.createQuery("SELECT m FROM Member m WHERE m.name = :findName", Member.class)
+                .setParameter("findName", findName)
+                .getSingleResult();
+    }
+
+    public List<Member> findAll() {
+        return em.createQuery("SELECT m FROM Member m", Member.class)
+                .getResultList();
+    }*/
 }

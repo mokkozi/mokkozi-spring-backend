@@ -2,6 +2,8 @@ package com.project.mokkozi.service;
 
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.model.ApiResponse;
+import com.project.mokkozi.model.JoinRequest;
 import com.project.mokkozi.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -113,5 +115,13 @@ public class MemberService {
         memberRepository.deleteById(id);
         return "ok";
     }
+
+    public boolean checkLoginIdDuplicate(String loginId) {
+        return memberRepository.existsByLoginId(loginId);
+    }
+
+    /*public ApiResponse join(JoinRequest request) {
+        return new ApiResponse(200, "회원가입 성공", null);
+    }*/
 
 }
