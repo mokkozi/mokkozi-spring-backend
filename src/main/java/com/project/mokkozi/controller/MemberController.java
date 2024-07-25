@@ -1,8 +1,12 @@
 package com.project.mokkozi.controller;
 
+
+import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
 import com.project.mokkozi.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +33,10 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
+
+    @Autowired
+    private JWTProvider jwtProvider;
+
     /**
      * [createMember] 사용자 생성 및 생성된 사용자 반환
      * <p>
@@ -54,18 +62,6 @@ public class MemberController {
         return ResponseEntity.ok(memberService.readMembers());
     }
 
-    /*@GetMapping
-    public String readMembers(@RequestParam(value = "id", required = false) Long id, Model model) {
-        if(id != null) { // member 단일 조회
-            model.addAttribute("members", memberService.readMember(id));
-//          return ResponseEntity.ok(memberService.readMember(id));
-        } else {
-            model.addAttribute("members", memberService.readMembers());
-        }
-        return "/list";
-//        return ResponseEntity.ok(memberService.readMembers());
-    }*/
-
     /**
      * [updateMember] id에 해당하는 member 정보 수정
      * <p>
@@ -88,6 +84,17 @@ public class MemberController {
     public ResponseEntity<Void> deleteMember(@PathVariable @RequestParam(value = "id") Long id) {
         memberService.deleteMember(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody Member reqMember) {
+        Member loginMember = memberService.login(reqMember);    // 1. 사용자 정보 확인
+        String token = jwtProvider.generateToken(loginMember);  // 2. Jwt 생성
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + token);    // 3. header 내 Jwt 전달
+
+        return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.project.mokkozi.service;
 
+import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
 import com.project.mokkozi.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +19,22 @@ public class MemberService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private JWTProvider jwtProvider;
+
+    public Member login(Member reqMember) {
+        Optional<Member> optionalMember = Optional.ofNullable(memberRepository.findByLoginId(reqMember.getLoginId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다.")));
+
+        Member member = optionalMember.get();
+
+        if(!member.getPassword().equals(reqMember.getPassword())){
+            throw new IllegalArgumentException("비밀번호가 올바르지 않습니다.");
+        }
+
+        return member;
+    }
 
     /**
      * 사용자 생성 및 생성된 사용자 반환
