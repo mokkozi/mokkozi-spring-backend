@@ -2,8 +2,6 @@ package com.project.mokkozi.service;
 
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
-import com.project.mokkozi.model.ApiResponse;
-import com.project.mokkozi.model.JoinRequest;
 import com.project.mokkozi.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
