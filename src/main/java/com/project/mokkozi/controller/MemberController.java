@@ -2,9 +2,8 @@ package com.project.mokkozi.controller;
 
 
 import com.project.mokkozi.auth.JWTProvider;
+import com.project.mokkozi.dto.ApiResponseDto;
 import com.project.mokkozi.entity.Member;
-import com.project.mokkozi.model.ApiResponse;
-import com.project.mokkozi.model.JoinRequest;
 import com.project.mokkozi.service.MemberService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/members")
@@ -46,10 +41,10 @@ public class MemberController {
      * @param member 생성할 사용자 정보
      * @return 생성된 사용자 정보
      */
-    @PostMapping
+    /*@PostMapping
     public @ResponseBody ResponseEntity<Member> createMember(@RequestBody Member member) {
         return ResponseEntity.ok(memberService.createMember(member));
-    }
+    }*/
 
     /**
      * [readMembers] 사용자 정보 조회
@@ -100,18 +95,29 @@ public class MemberController {
         return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
     }
 
-    @GetMapping("/duplication/{loginId}")
-    public ResponseEntity<?> checkLoginIdDuplicate(@PathVariable String loginId) throws BadRequestException{
-        if(memberService.checkLoginIdDuplicate(loginId)) {
-            throw new BadRequestException("중복된 아이디 입니다.");
-        }
-        else {
-            return ResponseEntity.ok("사용 가능한 아이디 입니다.");
-        }
-    }
-
     /*@PostMapping("/members")
     public ApiResponse join(@RequestBody JoinRequest request) {
         return memberService.join(request);
     }*/
+
+    @GetMapping("/duplication/{loginId}")
+    public ResponseEntity<ApiResponseDto> checkLoginIdDuplicate(@PathVariable String loginId){
+        if(memberService.checkLoginIdDuplicate(loginId)) {
+            return ResponseEntity.ok(
+                    ApiResponseDto.res(HttpStatus.BAD_REQUEST, "중복된 아이디 입니다.", null)
+            );
+        }
+        else {
+            return ResponseEntity.ok(
+                    ApiResponseDto.res(HttpStatus.OK, "사용 가능한 아이디 입니다.", loginId)
+            );
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponseDto> join(@RequestBody Member member) {
+        return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "회원가입 성공", memberService.createMember(member))
+        );
+    }
 }

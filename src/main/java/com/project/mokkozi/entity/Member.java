@@ -21,28 +21,12 @@ public class Member {
     @Column(nullable = false)
     private String name;
 
+    @Column
+    private String catetory1;
 
-    public Long getId() {
-        return id;
-    }
+    @Column
+    private String category2;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
+    @Column
+    private String category3;
 }
