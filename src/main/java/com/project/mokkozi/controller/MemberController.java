@@ -2,9 +2,9 @@ package com.project.mokkozi.controller;
 
 
 import com.project.mokkozi.auth.JWTProvider;
+import com.project.mokkozi.auth.SHA256Util;
 import com.project.mokkozi.entity.Member;
-import com.project.mokkozi.model.ApiResponse;
-import com.project.mokkozi.model.JoinRequest;
+import com.project.mokkozi.service.LoginService;
 import com.project.mokkozi.service.MemberService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/members")
@@ -36,6 +32,8 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private LoginService loginService;
 
     @Autowired
     private JWTProvider jwtProvider;
@@ -91,7 +89,7 @@ public class MemberController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody Member reqMember) {
-        Member loginMember = memberService.login(reqMember);    // 1. 사용자 정보 확인
+        Member loginMember = loginService.login(reqMember);    // 1. 사용자 정보 확인
         String token = jwtProvider.generateToken(loginMember);  // 2. Jwt 생성
 
         HttpHeaders headers = new HttpHeaders();
