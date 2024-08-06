@@ -1,11 +1,13 @@
-package com.project.mokkozi.entity;
+package com.project.mokkozi.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
+//@Setter
 @Entity
 @Getter
 @Setter
+@AllArgsConstructor
 @Table(name = "Member")
 public class Member {
     @Id
@@ -22,11 +24,26 @@ public class Member {
     private String name;
 
     @Column
-    private String catetory1;
+    private String category1;
 
     @Column
     private String category2;
 
     @Column
     private String category3;
+
+    @Column
+    private Integer warningCnt;
+
+    public Member() {
+
+    }
+
+    public static Member of(String title, String author) {
+        Member member = new Member();
+        //member.title = title;
+        return member;
+    }
+
+
 }

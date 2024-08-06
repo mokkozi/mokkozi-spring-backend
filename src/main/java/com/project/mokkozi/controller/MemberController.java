@@ -3,9 +3,9 @@ package com.project.mokkozi.controller;
 
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.dto.ApiResponseDto;
-import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.dto.MemberDto;
+import com.project.mokkozi.model.Member;
 import com.project.mokkozi.service.MemberService;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -54,10 +54,17 @@ public class MemberController {
      */
     @GetMapping
     public @ResponseBody ResponseEntity readMembers(@RequestParam(value = "id", required = false) Long id) {
+        // 프로필 조회
         if(id != null) { // member 단일 조회
-            return ResponseEntity.ok(memberService.readMember(id));
+            return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공",
+                            memberService.readMember(id))
+            );
         }
-        return ResponseEntity.ok(memberService.readMembers());
+        // 회원목록 조회
+        return ResponseEntity.ok(
+            ApiResponseDto.res(HttpStatus.OK, "회원목록 조회 성공", memberService.readMembers())
+        );
     }
 
     /**
@@ -68,8 +75,11 @@ public class MemberController {
      * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 존재할 경우 값 수정(set)
      */
     @PatchMapping
-    public ResponseEntity<Member> updateMember (@PathVariable @RequestParam(value = "id") Long id, @RequestBody Member member) {
-        return ResponseEntity.ok(memberService.updateMember(id, member));
+    public ResponseEntity<ApiResponseDto> updateMember (@PathVariable @RequestParam(value = "id") Long id, @RequestBody MemberDto memberDto) {
+        return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "프로필 수정 성공",
+                        memberService.updateMember(id, memberDto))
+        );
     }
 
     /**

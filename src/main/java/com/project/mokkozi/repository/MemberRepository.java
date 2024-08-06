@@ -1,12 +1,10 @@
 package com.project.mokkozi.repository;
 
-import com.project.mokkozi.entity.Member;
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
+import com.project.mokkozi.dto.MemberDto;
+import com.project.mokkozi.model.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,7 +14,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Optional<Member> findByName(String memberName);
     Optional<Member> findByLoginId(String loginId);
     boolean existsByLoginId(String loginId);
-
     /*
     private final EntityManager em;
 
