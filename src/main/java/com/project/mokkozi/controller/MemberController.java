@@ -1,10 +1,7 @@
 package com.project.mokkozi.controller;
 
-
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.entity.Member;
-import com.project.mokkozi.model.ApiResponse;
-import com.project.mokkozi.model.JoinRequest;
 import com.project.mokkozi.service.MemberService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,11 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/members")

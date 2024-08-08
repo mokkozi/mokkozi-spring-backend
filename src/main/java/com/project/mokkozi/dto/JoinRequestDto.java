@@ -1,9 +1,9 @@
-package com.project.mokkozi.model;
+package com.project.mokkozi.dto;
 
 import lombok.Getter;
 
 @Getter
-public class JoinRequest {
+public class JoinRequestDto {
     String loginId;
     String password;
     String name;
