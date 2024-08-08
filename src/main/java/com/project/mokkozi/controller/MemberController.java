@@ -1,6 +1,5 @@
 package com.project.mokkozi.controller;
 
-
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.auth.SHA256Util;
 import com.project.mokkozi.entity.Member;

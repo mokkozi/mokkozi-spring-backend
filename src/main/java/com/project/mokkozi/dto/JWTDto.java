@@ -1,4 +1,4 @@
-package com.project.mokkozi.auth;
+package com.project.mokkozi.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
