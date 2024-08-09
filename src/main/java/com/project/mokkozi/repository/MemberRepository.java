@@ -1,6 +1,7 @@
 package com.project.mokkozi.repository;
 
-import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.dto.MemberDto;
+import com.project.mokkozi.model.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

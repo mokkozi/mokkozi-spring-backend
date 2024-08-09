@@ -1,6 +1,6 @@
 package com.project.mokkozi.auth;
 
-import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.model.Member;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

@@ -2,10 +2,11 @@ package com.project.mokkozi.controller;
 
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.auth.SHA256Util;
-import com.project.mokkozi.entity.Member;
 import com.project.mokkozi.service.LoginService;
+import com.project.mokkozi.dto.ApiResponseDto;
+import com.project.mokkozi.dto.MemberDto;
+import com.project.mokkozi.model.Member;
 import com.project.mokkozi.service.MemberService;
-import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -43,10 +44,10 @@ public class MemberController {
      * @param member 생성할 사용자 정보
      * @return 생성된 사용자 정보
      */
-    @PostMapping
+    /*@PostMapping
     public @ResponseBody ResponseEntity<Member> createMember(@RequestBody Member member) {
         return ResponseEntity.ok(memberService.createMember(member));
-    }
+    }*/
 
     /**
      * [readMembers] 사용자 정보 조회
@@ -56,10 +57,17 @@ public class MemberController {
      */
     @GetMapping
     public @ResponseBody ResponseEntity readMembers(@RequestParam(value = "id", required = false) Long id) {
+        // 프로필 조회
         if(id != null) { // member 단일 조회
-            return ResponseEntity.ok(memberService.readMember(id));
+            return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공",
+                            memberService.readMember(id))
+            );
         }
-        return ResponseEntity.ok(memberService.readMembers());
+        // 회원목록 조회
+        return ResponseEntity.ok(
+            ApiResponseDto.res(HttpStatus.OK, "회원목록 조회 성공", memberService.readMembers())
+        );
     }
 
     /**
@@ -70,8 +78,11 @@ public class MemberController {
      * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 존재할 경우 값 수정(set)
      */
     @PatchMapping
-    public ResponseEntity<Member> updateMember (@PathVariable @RequestParam(value = "id") Long id, @RequestBody Member member) {
-        return ResponseEntity.ok(memberService.updateMember(id, member));
+    public ResponseEntity<ApiResponseDto> updateMember (@PathVariable @RequestParam(value = "id") Long id, @RequestBody MemberDto memberDto) {
+        return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "프로필 수정 성공",
+                        memberService.updateMember(id, memberDto))
+        );
     }
 
     /**
@@ -97,18 +108,29 @@ public class MemberController {
         return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
     }
 
-    @GetMapping("/duplication/{loginId}")
-    public ResponseEntity<?> checkLoginIdDuplicate(@PathVariable String loginId) throws BadRequestException{
-        if(memberService.checkLoginIdDuplicate(loginId)) {
-            throw new BadRequestException("중복된 아이디 입니다.");
-        }
-        else {
-            return ResponseEntity.ok("사용 가능한 아이디 입니다.");
-        }
-    }
-
     /*@PostMapping("/members")
     public ApiResponse join(@RequestBody JoinRequest request) {
         return memberService.join(request);
     }*/
+
+    @GetMapping("/duplication/{loginId}")
+    public ResponseEntity<ApiResponseDto> checkLoginIdDuplicate(@PathVariable String loginId){
+        if(memberService.checkLoginIdDuplicate(loginId)) {
+            return ResponseEntity.ok(
+                    ApiResponseDto.res(HttpStatus.BAD_REQUEST, "중복된 아이디 입니다.", null)
+            );
+        }
+        else {
+            return ResponseEntity.ok(
+                    ApiResponseDto.res(HttpStatus.OK, "사용 가능한 아이디 입니다.", loginId)
+            );
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponseDto> join(@RequestBody Member member) {
+        return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "회원가입 성공", memberService.createMember(member))
+        );
+    }
 }

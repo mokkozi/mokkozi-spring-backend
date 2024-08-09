@@ -2,16 +2,22 @@ package com.project.mokkozi.service;
 
 import com.project.mokkozi.auth.SHA256Util;
 import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.auth.JWTProvider;
+import com.project.mokkozi.dto.MemberDto;
 import com.project.mokkozi.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional // DB의 일관성을 유지하기 위해 service 단에 transaction을 걸어줌
 @RequiredArgsConstructor
@@ -35,14 +41,18 @@ public class MemberService {
      * <p>
      * @return 사용자 정보가 존재할 경우 member, 그렇지 않을 경우 null 반환
      */
-    public List<Member> readMembers() {
-        return memberRepository.findAll();
+    public List<MemberDto> readMembers() {
+        return memberRepository
+                .findAll()
+                .stream()
+                .map(this::convertMember)
+                .collect(Collectors.toList());
     }
 
-    public Member readMember(Long id) {
+    public MemberDto readMember(Long id) {
         Optional<Member> readMember = memberRepository.findById(id);
         if(readMember.isPresent()) {
-            return readMember.get();
+            return convertMember(readMember.get());
         }
         throw new EntityNotFoundException("Cannot find member id, id : " + id);
     }
@@ -71,19 +81,40 @@ public class MemberService {
      * id에 해당하는 member 정보 수정
      * <p>
      * @param id 조회할 사용자명
-     * @param member 수정할 정보가 담긴 member 객체
+     * @param memberDto 수정할 정보가 담긴 member 객체
      * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 존재할 경우 값 수정(set)
      */
-    public Member updateMember(Long id, Member member) {
+    public Member updateMember(Long id, MemberDto memberDto) {
         Optional<Member> findMember = memberRepository.findById(id);
         if(!findMember.isPresent()) {
             throw new EntityNotFoundException("member not present, id : " + id);
         }
 
         Member updateMember = findMember.get();
-        updateMember.setPassword(member.getPassword());
-        updateMember.setName(member.getName());
-        updateMember.setSalt(member.getSalt());
+
+        if(StringUtils.hasLength(memberDto.getLoginId())) {
+            updateMember.setLoginId((memberDto.getLoginId()));
+        }
+        if(StringUtils.hasLength(memberDto.getName())) {
+            updateMember.setName((memberDto.getName()));
+        }
+        if(StringUtils.hasLength(memberDto.getPassword())) {
+            updateMember.setPassword((memberDto.getPassword()));
+        }
+        log.info("check >> " + StringUtils.hasLength(memberDto.getCategory1()));
+        if(StringUtils.hasLength(memberDto.getCategory1())) {
+            log.info("check 2");
+            updateMember.setCategory1((memberDto.getCategory1()));
+        }
+        if(StringUtils.hasLength(memberDto.getCategory2())) {
+            updateMember.setCategory2((memberDto.getCategory2()));
+        }
+        if(StringUtils.hasLength(memberDto.getCategory3())) {
+            updateMember.setCategory3((memberDto.getCategory3()));
+        }
+        if(memberDto.getWarningCnt() != null) {
+            updateMember.setWarningCnt((memberDto.getWarningCnt()));
+        }
 
         return memberRepository.save(updateMember);
     }
@@ -103,6 +134,19 @@ public class MemberService {
         return memberRepository.existsByLoginId(loginId);
     }
 
+    /* Member -> MemberDto 형변환 */
+    private MemberDto convertMember(Member member) {
+        return MemberDto.builder()
+                .id(member.getId())
+                .loginId(member.getLoginId())
+                .password(member.getPassword())
+                .name(member.getName())
+                .category1(member.getCategory1())
+                .category2(member.getCategory2())
+                .category3(member.getCategory3())
+                .warningCnt(member.getWarningCnt())
+                .build();
+    }
     /*public ApiResponse join(JoinRequest request) {
         return new ApiResponse(200, "회원가입 성공", null);
     }*/
