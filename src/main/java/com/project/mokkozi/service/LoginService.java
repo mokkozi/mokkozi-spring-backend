@@ -1,7 +1,7 @@
 package com.project.mokkozi.service;
 
 import com.project.mokkozi.auth.SHA256Util;
-import com.project.mokkozi.entity.Member;
+import com.project.mokkozi.model.Member;
 import com.project.mokkozi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

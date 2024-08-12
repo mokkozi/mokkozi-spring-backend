@@ -1,8 +1,6 @@
 package com.project.mokkozi.service;
 
-import com.project.mokkozi.auth.SHA256Util;
-import com.project.mokkozi.entity.Member;
-import com.project.mokkozi.auth.JWTProvider;
+import com.project.mokkozi.model.Member;
 import com.project.mokkozi.dto.MemberDto;
 import com.project.mokkozi.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -50,9 +48,9 @@ public class MemberService {
     }
 
     public MemberDto readMember(Long id) {
-        Optional<Member> readMember = memberRepository.findById(id);
-        if(readMember.isPresent()) {
-            return convertMember(readMember.get());
+        Optional<Member> optionalMember = memberRepository.findById(id);
+        if(optionalMember.isPresent()) {
+            return convertMember(optionalMember.get());
         }
         throw new EntityNotFoundException("Cannot find member id, id : " + id);
     }
@@ -85,38 +83,38 @@ public class MemberService {
      * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 존재할 경우 값 수정(set)
      */
     public Member updateMember(Long id, MemberDto memberDto) {
-        Optional<Member> findMember = memberRepository.findById(id);
-        if(!findMember.isPresent()) {
+        Optional<Member> optionalMember = memberRepository.findById(id);
+        if(!optionalMember.isPresent()) {
             throw new EntityNotFoundException("member not present, id : " + id);
         }
 
-        Member updateMember = findMember.get();
+        Member entityMember = optionalMember.get();
 
         if(StringUtils.hasLength(memberDto.getLoginId())) {
-            updateMember.setLoginId((memberDto.getLoginId()));
+            entityMember.setLoginId((memberDto.getLoginId()));
         }
         if(StringUtils.hasLength(memberDto.getName())) {
-            updateMember.setName((memberDto.getName()));
+            entityMember.setName((memberDto.getName()));
         }
         if(StringUtils.hasLength(memberDto.getPassword())) {
-            updateMember.setPassword((memberDto.getPassword()));
+            entityMember.setPassword((memberDto.getPassword()));
         }
         log.info("check >> " + StringUtils.hasLength(memberDto.getCategory1()));
         if(StringUtils.hasLength(memberDto.getCategory1())) {
             log.info("check 2");
-            updateMember.setCategory1((memberDto.getCategory1()));
+            entityMember.setCategory1((memberDto.getCategory1()));
         }
         if(StringUtils.hasLength(memberDto.getCategory2())) {
-            updateMember.setCategory2((memberDto.getCategory2()));
+            entityMember.setCategory2((memberDto.getCategory2()));
         }
         if(StringUtils.hasLength(memberDto.getCategory3())) {
-            updateMember.setCategory3((memberDto.getCategory3()));
+            entityMember.setCategory3((memberDto.getCategory3()));
         }
         if(memberDto.getWarningCnt() != null) {
-            updateMember.setWarningCnt((memberDto.getWarningCnt()));
+            entityMember.setWarningCnt((memberDto.getWarningCnt()));
         }
 
-        return memberRepository.save(updateMember);
+        return memberRepository.save(entityMember);
     }
 
     /**
