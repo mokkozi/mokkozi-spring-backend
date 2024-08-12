@@ -74,7 +74,7 @@ public class MemberController {
      * [updateMember] id에 해당하는 member 정보 수정
      * <p>
      * @param id 조회할 사용자명
-     * @param member 수정할 정보가 담긴 member 객체
+     * @param memberDto 수정할 정보가 담긴 member 객체
      * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 존재할 경우 값 수정(set)
      */
     @PatchMapping
@@ -99,8 +99,8 @@ public class MemberController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody Member reqMember) {
-        Member loginMember = loginService.login(reqMember);    // 1. 사용자 정보 확인
-        String token = jwtProvider.generateToken(loginMember);  // 2. Jwt 생성
+        Member entityMember = loginService.login(reqMember);    // 1. 사용자 정보 확인
+        String token = jwtProvider.generateToken(entityMember);  // 2. Jwt 생성
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + token);    // 3. header 내 Jwt 전달
