@@ -1,4 +1,4 @@
-package com.project.mokkozi.entity;
+package com.project.mokkozi.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;

@@ -1,6 +1,6 @@
 package com.project.mokkozi.controller;
 
-import com.project.mokkozi.entity.Mokkozi;
+import com.project.mokkozi.model.Mokkozi;
 import com.project.mokkozi.service.MokkoziService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +25,24 @@ public class MokkoziController {
     }
 
     /**
-     * <strong>[Read]</strong> 모꼬지 정보 조회
+     * <strong>[Read]</strong> 모든 모꼬지 정보 조회
      * <p>
-     * @param id 조회할 모꼬지 id (선택)
-     * @return param으로 id가 넘어올 경우 해당 모꼬지 조회, 없을 경우 모든 모꼬지 조회
+     * @return 모든 모꼬지 조회 (목록)
      */
     @GetMapping
-    public @ResponseBody ResponseEntity readMokkozis(@RequestParam(value = "id", required = false) Long id) {
-        if(id != null) {
-            return ResponseEntity.ok(mokkoziService.readMokkozi(id));
-        }
+    public @ResponseBody ResponseEntity readMokkozis() {
         return ResponseEntity.ok(mokkoziService.readMokkozis());
+    }
+
+    /**
+     * <strong>[Read]</strong> 단일 모꼬지 정보 조회
+     * <p>
+     * @param id 조회할 모꼬지 id
+     * @return id에 해당하는 단일 모꼬지 정보 조회
+     */
+    @GetMapping
+    public @ResponseBody ResponseEntity readMokkozi(@RequestParam(value = "id", required = true) Long id) {
+        return ResponseEntity.ok(mokkoziService.readMokkozi(id));
     }
 
     /**

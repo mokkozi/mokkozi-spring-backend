@@ -1,6 +1,6 @@
 package com.project.mokkozi.service;
 
-import com.project.mokkozi.entity.Mokkozi;
+import com.project.mokkozi.model.Mokkozi;
 import com.project.mokkozi.repository.MokkoziRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
