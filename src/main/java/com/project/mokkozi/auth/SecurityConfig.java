@@ -18,7 +18,7 @@ public class SecurityConfig {
                             .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                             .requestMatchers("/**").permitAll()
                             .anyRequest().authenticated())
-                    .csrf(csrf -> csrf.ignoringRequestMatchers("/members/login"))
+                    .csrf(csrf -> csrf.disable())
                     .headers(headers -> headers.disable())
                     .logout(logout -> logout.disable())
 //                    .formLogin(form -> form.loginPage("/members/login").loginProcessingUrl("/members/login")
