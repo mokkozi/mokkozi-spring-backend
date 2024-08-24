@@ -52,18 +52,19 @@ public class MemberController {
     /**
      * [readMembers] 사용자 정보 조회
      * <p>
-     * @param id 조회할 사용자 id (선택)
+     * @param memberId 조회할 사용자 id (선택)
      * @return param으로 id가 넘어올 경우 해당 사용자 조회, 없을 경우 모든 사용자 조회
      */
-    @GetMapping
-    public @ResponseBody ResponseEntity readMembers(@RequestParam(value = "id", required = false) Long id) {
+    @GetMapping("/{memberId}")
+    public @ResponseBody ResponseEntity readMember(@PathVariable Long memberId) {
         // 프로필 조회
-        if(id != null) { // member 단일 조회
-            return ResponseEntity.ok(
+        return ResponseEntity.ok(
                 ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공",
-                            memberService.readMember(id))
-            );
-        }
+                        memberService.readMember(memberId))
+        );
+    }
+    @GetMapping
+    public @ResponseBody ResponseEntity readMembers() {
         // 회원목록 조회
         return ResponseEntity.ok(
             ApiResponseDto.res(HttpStatus.OK, "회원목록 조회 성공", memberService.readMembers())
@@ -79,10 +80,7 @@ public class MemberController {
      */
     @PatchMapping
     public ResponseEntity<ApiResponseDto> updateMember (@PathVariable @RequestParam(value = "id") Long id, @RequestBody MemberDto memberDto) {
-        return ResponseEntity.ok(
-                ApiResponseDto.res(HttpStatus.OK, "프로필 수정 성공",
-                        memberService.updateMember(id, memberDto))
-        );
+        return ResponseEntity.ok(memberService.updateMember(id, memberDto));
     }
 
     /**

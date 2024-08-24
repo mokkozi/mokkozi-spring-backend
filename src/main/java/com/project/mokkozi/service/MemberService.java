@@ -1,12 +1,17 @@
 package com.project.mokkozi.service;
 
+import com.project.mokkozi.dto.ApiResponseDto;
 import com.project.mokkozi.model.Member;
 import com.project.mokkozi.dto.MemberDto;
 import com.project.mokkozi.repository.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
+import org.hibernate.UnknownEntityTypeException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -78,43 +83,36 @@ public class MemberService {
     /**
      * id에 해당하는 member 정보 수정
      * <p>
-     * @param id 조회할 사용자명
-     * @param memberDto 수정할 정보가 담긴 member 객체
-     * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 존재할 경우 값 수정(set)
+     * @param id 조회할 사용자
+     * @param requestMemberDto 수정할 정보가 담긴 MemberDto 객체
+     * @return 사용자 정보가 존재하지 않을 경우 EntityNotFoundException, 필수값 입력하지 않을 경우 BadRequestException,
+     *         필수값 입력 & 정보가 존재할 경우 값 수정(set)
      */
-    public Member updateMember(Long id, MemberDto memberDto) {
-        Optional<Member> optionalMember = memberRepository.findById(id);
-        if(!optionalMember.isPresent()) {
-            throw new EntityNotFoundException("member not present, id : " + id);
-        }
+    public ApiResponseDto updateMember(Long id, MemberDto requestMemberDto) {
+        try {
+            Member beforeMember = memberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("회원정보를 찾을 수 없습니다. id = " + id));
 
-        Member entityMember = optionalMember.get();
+            // Entity클래스의 nullable = false인 컬럼은 필수값 체크(salt는 DB에는 not null인데 entity에는 안되어있음)
+            if(!StringUtils.hasLength(requestMemberDto.getLoginId())
+                    || !StringUtils.hasLength(requestMemberDto.getPassword())
+                    || !StringUtils.hasLength(requestMemberDto.getName())
+            ) {
+                throw new BadRequestException("[로그인 ID, 비밀번호, 이름]은 필수값입니다.");
+            }
 
-        if(StringUtils.hasLength(memberDto.getLoginId())) {
-            entityMember.setLoginId((memberDto.getLoginId()));
-        }
-        if(StringUtils.hasLength(memberDto.getName())) {
-            entityMember.setName((memberDto.getName()));
-        }
-        if(StringUtils.hasLength(memberDto.getPassword())) {
-            entityMember.setPassword((memberDto.getPassword()));
-        }
-        log.info("check >> " + StringUtils.hasLength(memberDto.getCategory1()));
-        if(StringUtils.hasLength(memberDto.getCategory1())) {
-            log.info("check 2");
-            entityMember.setCategory1((memberDto.getCategory1()));
-        }
-        if(StringUtils.hasLength(memberDto.getCategory2())) {
-            entityMember.setCategory2((memberDto.getCategory2()));
-        }
-        if(StringUtils.hasLength(memberDto.getCategory3())) {
-            entityMember.setCategory3((memberDto.getCategory3()));
-        }
-        if(memberDto.getWarningCnt() != null) {
-            entityMember.setWarningCnt((memberDto.getWarningCnt()));
-        }
+            // Member 변경 대상 컬럼값 세팅
+            beforeMember.update(beforeMember, requestMemberDto);
 
-        return memberRepository.save(entityMember);
+            MemberDto responseMemberDto = convertMember(memberRepository.save(beforeMember));
+
+            return ApiResponseDto.res(HttpStatus.OK, "회원정보 수정 성공", responseMemberDto);
+        }
+        catch (EntityNotFoundException e) {
+            return ApiResponseDto.res(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        }
+        catch (BadRequestException e) {
+            return ApiResponseDto.res(HttpStatus.BAD_REQUEST, e.getMessage(), null);
+        }
     }
 
     /**
@@ -145,10 +143,4 @@ public class MemberService {
                 .warningCnt(member.getWarningCnt())
                 .build();
     }
-    /*public ApiResponse join(JoinRequest request) {
-        return new ApiResponse(200, "회원가입 성공", null);
-    }*/
-
-
-
 }
