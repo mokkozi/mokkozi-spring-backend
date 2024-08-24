@@ -35,8 +35,8 @@ public class MemberService {
      * @param member 생성할 사용자 정보
      * @return 생성된 사용자 정보
      */
-    public Member createMember(Member member) {
-        return memberRepository.save(member);
+    public ApiResponseDto createMember(Member member) {
+        return ApiResponseDto.res(HttpStatus.OK, "회원가입 성공", memberRepository.save(member));
     }
 
     /**
@@ -44,40 +44,27 @@ public class MemberService {
      * <p>
      * @return 사용자 정보가 존재할 경우 member, 그렇지 않을 경우 null 반환
      */
-    public List<MemberDto> readMembers() {
-        return memberRepository
+    public ApiResponseDto readMembers() {
+        return ApiResponseDto.res(HttpStatus.OK, "회원목록 조회 성공",
+            memberRepository
                 .findAll()
                 .stream()
                 .map(this::convertMember)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+        );
+
     }
 
-    public MemberDto readMember(Long id) {
-        Optional<Member> optionalMember = memberRepository.findById(id);
-        if(optionalMember.isPresent()) {
-            return convertMember(optionalMember.get());
+    public ApiResponseDto readMember(Long id) {
+        try {
+            Member targetMember = memberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("회원정보를 찾을 수 없습니다. id = " + id));
+            MemberDto responseMemberDto = convertMember(memberRepository.save(targetMember));
+
+            return ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공", responseMemberDto);
         }
-        throw new EntityNotFoundException("Cannot find member id, id : " + id);
-    }
-
-    /**
-     * id에 해당하는 사용자 정보 조회
-     * <p>
-     * @param id 조회할 사용자명
-     * @return 사용자 정보가 존재할 경우 member, 그렇지 않을 경우 null 반환
-     */
-    public Optional<Member> findById(Long id) {
-        return memberRepository.findById(id);
-    }
-
-    /**
-     * memberName에 해당하는 사용자 정보 조회
-     * <p>
-     * @param memberName 조회할 사용자명
-     * @return 사용자 정보가 존재할 경우 member, 그렇지 않을 경우 null 반환
-     */
-    public Optional<Member> findByName(String memberName) {
-        return memberRepository.findByName(memberName);
+        catch (EntityNotFoundException e) {
+            return ApiResponseDto.res(HttpStatus.NOT_FOUND, e.getMessage(), null);
+        }
     }
 
     /**
@@ -126,8 +113,12 @@ public class MemberService {
         return "ok";
     }
 
-    public boolean checkLoginIdDuplicate(String loginId) {
-        return memberRepository.existsByLoginId(loginId);
+    public ApiResponseDto checkLoginIdDuplicate(String loginId) {
+        if(memberRepository.existsByLoginId(loginId)) {
+            return ApiResponseDto.res(HttpStatus.BAD_REQUEST, "중복된 아이디 입니다.", null);
+        }
+
+        return ApiResponseDto.res(HttpStatus.OK, "사용 가능한 아이디 입니다.", loginId);
     }
 
     /* Member -> MemberDto 형변환 */

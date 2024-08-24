@@ -39,23 +39,22 @@ public class MemberController {
     private JWTProvider jwtProvider;
 
     /**
-     * [createMember] 사용자 생성 및 생성된 사용자 반환
-     * <p>
-     * @param member 생성할 사용자 정보
-     * @return 생성된 사용자 정보
-     */
-    /*@PostMapping
-    public @ResponseBody ResponseEntity<Member> createMember(@RequestBody Member member) {
-        return ResponseEntity.ok(memberService.createMember(member));
-    }*/
-
-    /**
      * [readMembers] 사용자 정보 조회
      * <p>
-     * @param memberId 조회할 사용자 id (선택)
+     * @param id 조회할 사용자 id (선택)
      * @return param으로 id가 넘어올 경우 해당 사용자 조회, 없을 경우 모든 사용자 조회
      */
-    @GetMapping("/{memberId}")
+    @GetMapping
+    public @ResponseBody ResponseEntity readMembers(@RequestParam(value = "id", required = false) Long id) {
+        // 프로필 조회(member 단일 조회)
+        if(id != null) {
+            return ResponseEntity.ok(memberService.readMember(id));
+        }
+        // 회원목록 조회
+        return ResponseEntity.ok(memberService.readMembers());
+    }
+
+    /*@GetMapping("/{memberId}")
     public @ResponseBody ResponseEntity readMember(@PathVariable Long memberId) {
         // 프로필 조회
         return ResponseEntity.ok(
@@ -69,7 +68,7 @@ public class MemberController {
         return ResponseEntity.ok(
             ApiResponseDto.res(HttpStatus.OK, "회원목록 조회 성공", memberService.readMembers())
         );
-    }
+    }*/
 
     /**
      * [updateMember] id에 해당하는 member 정보 수정
@@ -106,29 +105,13 @@ public class MemberController {
         return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
     }
 
-    /*@PostMapping("/members")
-    public ApiResponse join(@RequestBody JoinRequest request) {
-        return memberService.join(request);
-    }*/
-
     @GetMapping("/duplication/{loginId}")
     public ResponseEntity<ApiResponseDto> checkLoginIdDuplicate(@PathVariable String loginId){
-        if(memberService.checkLoginIdDuplicate(loginId)) {
-            return ResponseEntity.ok(
-                    ApiResponseDto.res(HttpStatus.BAD_REQUEST, "중복된 아이디 입니다.", null)
-            );
-        }
-        else {
-            return ResponseEntity.ok(
-                    ApiResponseDto.res(HttpStatus.OK, "사용 가능한 아이디 입니다.", loginId)
-            );
-        }
+        return ResponseEntity.ok(memberService.checkLoginIdDuplicate(loginId));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponseDto> join(@RequestBody Member member) {
-        return ResponseEntity.ok(
-                ApiResponseDto.res(HttpStatus.OK, "회원가입 성공", memberService.createMember(member))
-        );
+        return ResponseEntity.ok(memberService.createMember(member));
     }
 }
