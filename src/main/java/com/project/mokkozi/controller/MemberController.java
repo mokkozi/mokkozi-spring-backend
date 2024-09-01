@@ -39,17 +39,6 @@ public class MemberController {
     private JWTProvider jwtProvider;
 
     /**
-     * [createMember] 사용자 생성 및 생성된 사용자 반환
-     * <p>
-     * @param member 생성할 사용자 정보
-     * @return 생성된 사용자 정보
-     */
-    /*@PostMapping
-    public @ResponseBody ResponseEntity<Member> createMember(@RequestBody Member member) {
-        return ResponseEntity.ok(memberService.createMember(member));
-    }*/
-
-    /**
      * [readMembers] 사용자 정보 조회
      * <p>
      * @param id 조회할 사용자 id (선택)
@@ -59,15 +48,10 @@ public class MemberController {
     public @ResponseBody ResponseEntity readMembers(@RequestParam(value = "id", required = false) Long id) {
         // 프로필 조회
         if(id != null) { // member 단일 조회
-            return ResponseEntity.ok(
-                ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공",
-                            memberService.readMember(id))
-            );
+            return ResponseEntity.ok(memberService.readMember(id));
         }
         // 회원목록 조회
-        return ResponseEntity.ok(
-            ApiResponseDto.res(HttpStatus.OK, "회원목록 조회 성공", memberService.readMembers())
-        );
+        return ResponseEntity.ok(memberService.readMembers());
     }
 
     /**

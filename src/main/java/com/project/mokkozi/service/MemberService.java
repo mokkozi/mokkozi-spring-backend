@@ -58,9 +58,7 @@ public class MemberService {
     public ApiResponseDto readMember(Long id) {
         try {
             Member targetMember = memberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("회원정보를 찾을 수 없습니다. id = " + id));
-            MemberDto responseMemberDto = convertMember(memberRepository.save(targetMember));
-
-            return ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공", responseMemberDto);
+            return ApiResponseDto.res(HttpStatus.OK, "프로필 조회 성공", convertMember(targetMember));
         }
         catch (EntityNotFoundException e) {
             return ApiResponseDto.res(HttpStatus.NOT_FOUND, e.getMessage(), null);
@@ -79,26 +77,13 @@ public class MemberService {
         try {
             Member beforeMember = memberRepository.findById(id).orElseThrow(()->new EntityNotFoundException("회원정보를 찾을 수 없습니다. id = " + id));
 
-            // Entity클래스의 nullable = false인 컬럼은 필수값 체크(salt는 DB에는 not null인데 entity에는 안되어있음)
-            if(!StringUtils.hasLength(requestMemberDto.getLoginId())
-                    || !StringUtils.hasLength(requestMemberDto.getPassword())
-                    || !StringUtils.hasLength(requestMemberDto.getName())
-            ) {
-                throw new BadRequestException("[로그인 ID, 비밀번호, 이름]은 필수값입니다.");
-            }
-
             // Member 변경 대상 컬럼값 세팅
-            beforeMember.update(requestMemberDto);
+            beforeMember.update(requestMemberDto); // Repository의 save 메서드 사용 안해도 변경됨
 
-            //MemberDto responseMemberDto = convertMember(memberRepository.save(beforeMember));
-
-            return ApiResponseDto.res(HttpStatus.OK, "회원정보 수정 성공", null);
+            return ApiResponseDto.res(HttpStatus.OK, "회원정보 수정 성공", convertMember(beforeMember));
         }
         catch (EntityNotFoundException e) {
             return ApiResponseDto.res(HttpStatus.NOT_FOUND, e.getMessage(), null);
-        }
-        catch (BadRequestException e) {
-            return ApiResponseDto.res(HttpStatus.BAD_REQUEST, e.getMessage(), null);
         }
     }
 
