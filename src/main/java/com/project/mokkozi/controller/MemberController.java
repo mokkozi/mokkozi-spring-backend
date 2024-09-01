@@ -79,10 +79,7 @@ public class MemberController {
      */
     @PatchMapping
     public ResponseEntity<ApiResponseDto> updateMember (@PathVariable @RequestParam(value = "id") Long id, @RequestBody MemberDto memberDto) {
-        return ResponseEntity.ok(
-                ApiResponseDto.res(HttpStatus.OK, "프로필 수정 성공",
-                        memberService.updateMember(id, memberDto))
-        );
+        return ResponseEntity.ok(memberService.updateMember(id, memberDto));
     }
 
     /**
@@ -108,29 +105,13 @@ public class MemberController {
         return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
     }
 
-    /*@PostMapping("/members")
-    public ApiResponse join(@RequestBody JoinRequest request) {
-        return memberService.join(request);
-    }*/
-
     @GetMapping("/duplication/{loginId}")
     public ResponseEntity<ApiResponseDto> checkLoginIdDuplicate(@PathVariable String loginId){
-        if(memberService.checkLoginIdDuplicate(loginId)) {
-            return ResponseEntity.ok(
-                    ApiResponseDto.res(HttpStatus.BAD_REQUEST, "중복된 아이디 입니다.", null)
-            );
-        }
-        else {
-            return ResponseEntity.ok(
-                    ApiResponseDto.res(HttpStatus.OK, "사용 가능한 아이디 입니다.", loginId)
-            );
-        }
+        return ResponseEntity.ok(memberService.checkLoginIdDuplicate(loginId));
     }
 
     @PostMapping
     public ResponseEntity<ApiResponseDto> join(@RequestBody Member member) {
-        return ResponseEntity.ok(
-                ApiResponseDto.res(HttpStatus.OK, "회원가입 성공", memberService.createMember(member))
-        );
+        return ResponseEntity.ok(memberService.createMember(member));
     }
 }
