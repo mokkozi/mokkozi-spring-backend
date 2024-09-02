@@ -1,5 +1,6 @@
 package com.project.mokkozi.service;
 
+import com.project.mokkozi.auth.CustomUserDetails;
 import com.project.mokkozi.model.Member;
 import com.project.mokkozi.dto.MemberDto;
 import com.project.mokkozi.repository.MemberRepository;
@@ -7,6 +8,10 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -19,7 +24,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional // DB의 일관성을 유지하기 위해 service 단에 transaction을 걸어줌
 @RequiredArgsConstructor
-public class MemberService {
+public class MemberService implements UserDetailsService {
 
     @Autowired
     private MemberRepository memberRepository;
@@ -143,12 +148,23 @@ public class MemberService {
                 .category2(member.getCategory2())
                 .category3(member.getCategory3())
                 .warningCnt(member.getWarningCnt())
+                .refreshToken(member.getRefreshToken())
                 .build();
+    }
+
+    /* DB에서 불러온 사용자 정보를 담고 return, 없을 경우 예외 발생 */
+    // Override 한 함수라 함수명은 loadUserByUsername 이지만, 실제로 비교해야하는 컬럼은 loginId 이므로 로직 내에서는 loginId를 비교한다.
+    @Override
+    public CustomUserDetails loadUserByUsername(String loginId) throws UsernameNotFoundException {
+        Optional<Member> optionalMember = Optional.ofNullable(memberRepository.findByLoginId(loginId).orElseThrow(
+                () -> new UsernameNotFoundException(loginId + "<< loginId is not found.")
+        ));
+
+        return CustomUserDetails.fromEntity(optionalMember.get());
     }
     /*public ApiResponse join(JoinRequest request) {
         return new ApiResponse(200, "회원가입 성공", null);
     }*/
-
 
 
 }

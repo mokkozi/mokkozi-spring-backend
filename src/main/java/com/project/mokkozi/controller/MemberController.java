@@ -2,19 +2,28 @@ package com.project.mokkozi.controller;
 
 import com.project.mokkozi.auth.JWTProvider;
 import com.project.mokkozi.auth.SHA256Util;
+import com.project.mokkozi.dto.JWTDto;
 import com.project.mokkozi.service.LoginService;
 import com.project.mokkozi.dto.ApiResponseDto;
 import com.project.mokkozi.dto.MemberDto;
 import com.project.mokkozi.model.Member;
 import com.project.mokkozi.service.MemberService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
+@Slf4j
 @RequestMapping("/members")
 /*
     Create : POST (Body O)
@@ -35,8 +44,10 @@ public class MemberController {
     @Autowired
     private LoginService loginService;
 
-    @Autowired
-    private JWTProvider jwtProvider;
+    public MemberController(MemberService memberService, LoginService loginService) {
+        this.memberService = memberService;
+        this.loginService = loginService;
+    }
 
     /**
      * [createMember] 사용자 생성 및 생성된 사용자 반환
@@ -97,15 +108,44 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * [login] 로그인
+     * <p>
+     * @param loginReqMemberDto 로그인 시도하는 사용자
+     * @return 인증된 사용자일 경우 로그인
+     */
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody Member reqMember) {
-        Member entityMember = loginService.login(reqMember);    // 1. 사용자 정보 확인
-        String token = jwtProvider.generateToken(entityMember);  // 2. Jwt 생성
+    public ResponseEntity login(@RequestBody MemberDto loginReqMemberDto) { // todo Header에 'loginId,password' BASE64 암호화해서 넘겨줌
+        log.info(":: Login Start ::");
+        JWTDto resultJWTDto = loginService.login(loginReqMemberDto);    // 1. 사용자 정보 확인
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + token);    // 3. header 내 Jwt 전달
+        return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "로그인 성공",
+                        new HashMap<>() {{
+                            put("accessToken", resultJWTDto.getAccessToken());
+                            put("refreshToken", resultJWTDto.getRefreshToken());
+                            put("isSelectedCategory", true); // todo 구현 필요
+                        }}
+                )
+        );
+    }
 
-        return ResponseEntity.ok().headers(headers).body(HttpStatus.OK);
+    @PostMapping("/reissue")
+    public ResponseEntity reissue(@RequestHeader JWTDto reissueJwtDto) {
+        return ResponseEntity.ok(
+                ApiResponseDto.res(HttpStatus.OK, "reissue 성공", // 여기까지 문제가 없으면 무조건 OK? status랑 msg를 고정해서 보내도 괜찮은건지
+                    loginService.reissue(reissueJwtDto)
+                )
+        );
+    }
+
+    @PostMapping("/loginTest")
+    public String test() {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            throw new IllegalArgumentException("No authentication in info");
+        }
+        return authentication.getName();
     }
 
     /*@PostMapping("/members")
