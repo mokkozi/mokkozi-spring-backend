@@ -10,10 +10,11 @@ public class MemberDto {
     protected Long id;
     protected String loginId;
     protected String password;
+    protected String salt;
     protected String name;
     protected String category1;
     protected String category2;
     protected String category3;
     protected Integer warningCnt;
-
+    protected String refreshToken;
 }

@@ -38,6 +38,9 @@ public class Member {
     @Column
     private Integer warningCnt;
 
+    @Column
+    private String refreshToken;
+
     public Member() {
 
     }

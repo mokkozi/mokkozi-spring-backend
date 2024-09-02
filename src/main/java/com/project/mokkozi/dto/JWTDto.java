@@ -2,10 +2,13 @@ package com.project.mokkozi.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 @Builder
 @AllArgsConstructor
 public class JWTDto {
-    public String accessToken;
-    public String refreshToken;
+    private String grantType;
+    private String accessToken;
+    private String refreshToken;
 }
