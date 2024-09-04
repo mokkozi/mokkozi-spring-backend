@@ -16,12 +16,12 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.*;
-import java.util.function.Function;
-
 
 @RequiredArgsConstructor
 @Slf4j
@@ -40,8 +40,13 @@ public class JWTProvider implements AuthenticationProvider {
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    // accessToken 발급 (제거 예정)
-    public JWTDto generateAccessToken(Member member) {
+    /**
+     * AccessToken과 RefreshToken을 발급
+     * <p>
+     * @param member 입력된 사용자 정보
+     * @return 현 시점으로 발급된 AccessToken과 RefreshToken (JWT)
+     */
+    public JWTDto generateAccessNRefreshToken(Member member) { // ,List<> roles
         Date now = new Date();
         Claims claims = Jwts.claims();
         claims.put("sub", member.getName());
@@ -52,17 +57,6 @@ public class JWTProvider implements AuthenticationProvider {
                 .setExpiration(new Date(now.getTime() + ACCESS_TOKEN_EXPIRED_TIME))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
                 .compact();
-
-        return JWTDto.builder()
-                .grantType("Bearer")
-                .accessToken(accessToken)
-                .build();
-    }
-
-    // accessToken + refreshToken 발급
-    public JWTDto generateAccessNRefreshToken(Member member) { // ,List<> roles
-        Date now = new Date();
-        String accessToken = generateAccessToken(member).getAccessToken();
 
         String refreshToken = Jwts.builder()
                 .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_EXPIRED_TIME))
@@ -76,35 +70,32 @@ public class JWTProvider implements AuthenticationProvider {
                 .build();
     }
 
-    // Jwt 내 모든 클레임 추출
-    private Claims getAllClaimsFromJwt(String token) {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-    }
-
-    // Jwt 내 클레임 추출
-    private <T> T getClaimsFromJwt(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromJwt(token);
-        return claimsResolver.apply(claims);
-    }
-
-    // Jwt 내 사용자 로그인 아이디 추출
-    public String getLoginId(String token) {
-        return getClaimsFromJwt(token, Claims::getId);
-    }
-
-    // UserDetails 활용하여 DB에서 사용자 정보 추출
-    public CustomUserDetails getUserDetailsLoginId(String token) {
-        String loginId = this.getLoginId(token);
-        return memberService.loadUserByUsername(loginId);
-    }
-
+    /**
+     * Token 내 사용자 정보를 권한 객체에 담아 전달
+     * <p>
+     * @param token 전달받은 Token
+     * @return 현 사용자 정보+권한
+     */
     // 추출한 사용자 정보를 인증 객체에 담아줌
-    public Authentication getAuthentication(String accessToken) {
-        CustomUserDetails principal = getUserDetailsLoginId(accessToken);
-        return new UsernamePasswordAuthenticationToken(principal.getUsername(), principal.getPassword(), principal.getAuthorities());
-    }
+    public Authentication getAuthentication(String token) {
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
 
-    // header의 token 값 존재 유무 판별
+        Collection<? extends GrantedAuthority> authorities = new ArrayList<>();
+        User principal = new User(claims.getId(), "", authorities);
+
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+    }
+    /**
+     * Header의 Token 값 존재 유무 판별
+     * <p>
+     * @param request HttpServletRequest 값
+     * @return header에 JWT가 정상적으로 들어갔을 경우 token 값만을 추출, 그렇지 않을 경우 null
+     */
     public String resolveToken(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
         if(header != null && header.startsWith("Bearer ")) {
@@ -113,14 +104,18 @@ public class JWTProvider implements AuthenticationProvider {
         return null;
     }
 
-    // token 유효성 검사
+    /**
+     * Token 유효성 검사 및 예외 처리
+     * <p>
+     * @param token 전달받은 token
+     * @return JWT
+     */
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
-
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.warn("Invalid token", e);
